@@ -1,0 +1,328 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* MENU */
+.menu {
+    background-color: #0f172a;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 30px;
+    align-items: center;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.menu-links a {
+    color: white;
+    text-decoration: none;
+}
+
+/* FUNDO */
+body {
+    background-color: #f1f5f9;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+/* CABEÇALHO */
+.header {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: white;
+    padding: 35px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* STATUS */
+.status {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 22px;
+    background-color: #16a34a;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+/* BOTÕES */
+.botoes {
+    margin-top: 20px;
+}
+
+.btn {
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.azul { background-color: #2563eb; }
+.verde { background-color: #16a34a; }
+.cinza { background-color: #475569; }
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+/* CARD */
+.card {
+    background-color: white;
+    margin-top: 30px;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.1);
+}
+
+/* CATEGORIAS */
+.categorias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.categoria {
+    background-color: #e0e7ff;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+
+/* FORMULÁRIO */
+form {
+    max-width: 500px;
+    margin: auto;
+}
+
+.campo {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.campo label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.campo input,
+.campo select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
+
+.mensagem {
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+    .categorias {
+        justify-content: center;
+    }
+}
+.btn-regulamento {
+    background-color: #1bc743;
+}
+
+.btn-regulamento:hover {
+    background-color: #1e7e34;
+}
+
+.logo {
+    width: 200px;
+    margin: 20px auto;
+    display: block;
+}
+
+.card-principal {
+    display: flex;
+}
+
+.card-imagem {
+    margin-left: auto;
+}
+
+img {
+    width: 500px;
+}
+
+.btn-admin {
+    background-color: #c62828;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.btn-admin:hover {
+    background-color: #b71c1c;
+}
+
+/* ================== ADMIN ================== */
+
+body {
+    background-color: #f4f6f8;
+}
+
+/* Container principal */
+.admin-container {
+    max-width: 1000px;
+    margin: 60px auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Título */
+.admin-container h1 {
+    margin-bottom: 25px;
+    color: #1f2937;
+    text-align: center;
+}
+
+/* Tabela */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 25px;
+}
+
+.admin-table thead {
+    background-color: #1e3a8a;
+    color: #ffffff;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px;
+    text-align: left;
+}
+
+.admin-table tbody tr:nth-child(even) {
+    background-color: #f1f5f9;
+}
+
+.admin-table tbody tr:hover {
+    background-color: #e0e7ff;
+}
+
+/* Botão sair */
+.btn-sair {
+    display: inline-block;
+    background-color: #dc2626;
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    float: none;
+}
+
+.btn-sair:hover {
+    background-color: #b91c1c;
+}
+
+/* ================== LOGIN ADMIN ================== */
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 120px auto;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Título */
+.login-container h1 {
+    margin-bottom: 25px;
+    color: #1f2937;
+}
+
+/* Inputs */
+.login-container input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+/* Foco no input */
+.login-container input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* Botão */
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #1e3a8a;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-container button:hover {
+    background-color: #1e40af;
+}
+
+/* Mensagem de erro */
+.erro {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+/* BOTÃO EXCLUIR */
+.btn-excluir {
+    background-color: #dc2626;
+    color: #ffffff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-excluir:hover {
+    background-color: #b91c1c;
+}
+

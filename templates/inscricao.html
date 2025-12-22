@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscrição - {{ evento.nome }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <nav class="menu">
+        <div class="logo">CT FRANÇA</div>
+        <div class="menu-links">
+            <a href="/">Voltar</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="card">
+            <h2>Inscrição do Atleta</h2>
+
+            {% if mensagem %}
+                <p class="mensagem">{{ mensagem }}</p>
+            {% endif %}
+
+            <form method="POST">
+                <div class="campo">
+                    <label>Nome do Atleta</label>
+                    <input type="text" name="nome" required>
+                </div>
+
+                <div class="campo">
+                    <label>Categoria</label>
+                    <select name="categoria" required>
+                        <option value="">Selecione</option>
+                        {% for c in evento.categorias %}
+                            <option value="{{ c }}">{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label>Equipe</label>
+                    <select name="equipe" required>
+                        <option value="">Selecione</option>
+                        {% for e in evento.equipes %}
+                            <option value="{{ e }}">{{ e }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn azul">Enviar Inscrição</button>
+            </form>
+        </section>
+    </div>
+
+</body>
+</html>

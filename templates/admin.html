@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Inscritos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .tabela-admin {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tabela-admin th, .tabela-admin td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .tabela-admin th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
+        .tabela-admin tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .tabela-admin tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn-excluir {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-excluir:hover {
+            background-color: #c0392b;
+        }
+
+        /* Mensagem caso não haja inscritos */
+        .sem-inscritos {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Inscritos</h1>
+
+    {% if inscritos %}
+    <table class="tabela-admin">
+        <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Equipe</th>
+            <th>Ações</th>
+        </tr>
+        {% for inscrito in inscritos %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ inscrito.nome }}</td>
+            <td>{{ inscrito.categoria }}</td>
+            <td>{{ inscrito.equipe }}</td>
+            <td>
+                <form action="/admin/excluir/{{ loop.index0 }}" method="post" onsubmit="return confirm('Deseja excluir esta inscrição?')">
+                    <button class="btn-excluir">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <div class="sem-inscritos">Nenhum inscrito encontrado.</div>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ evento.nome }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- MENU -->
+    <nav class="menu">
+        <div class="logo">CT FRANÇA</div>
+        
+        <div class="menu-links">
+            <a href="/">Início</a>
+            <a href="/admin/login" class="btn-admin">Área do Admin</a>
+        </div>
+    </nav>
+
+
+    <div class="container">
+
+        <!-- CABEÇALHO -->
+        <header class="header">
+            <h1>{{ evento.nome }}</h1>
+            <p>{{ evento.local }}</p>
+            <p>{{ evento.data }}</p>
+            <span class="status">{{ evento.status }}</span>
+
+            <div class="botoes">
+                <a href="/inscricao" class="btn azul">Inscrição</a>
+                <button class="btn verde">Regulamento</button>
+                <button class="btn cinza">Chaveamento</button>
+            </div>
+            <img src="{{ url_for('static', filename='img/evento.jpg.jpeg') }}"
+     alt="Arte do evento">
+
+        </header>
+
+        <!-- CATEGORIAS -->
+        <section class="card">
+            <h2>Categorias</h2>
+            <div class="categorias">
+                {% for c in evento.categorias %}
+                    <div class="categoria">{{ c }}</div>
+                {% endfor %}
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
