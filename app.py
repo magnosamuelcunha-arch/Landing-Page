@@ -174,6 +174,8 @@ def exportar_pdf():
 
     return redirect("/static/inscritos.pdf")
 
+import re
+
 @app.route("/admin/pdf/categorias")
 def pdf_por_categoria():
     if not session.get("admin"):
@@ -191,14 +193,7 @@ def pdf_por_categoria():
         categorias[i["categoria"]].append(i)
 
     for categoria, lista in categorias.items():
-        nome_arquivo = (
-            categoria
-            .lower()
-            .replace(" ", "_")
-            .replace("–", "")
-            .replace(".", "")
-        )
-
+        nome_arquivo = re.sub(r'[^a-zA-Z0-9_]', '', categoria.lower().replace(" ", "_"))
         caminho_pdf = f"static/{nome_arquivo}.pdf"
 
         c = canvas.Canvas(caminho_pdf, pagesize=A4)
@@ -224,6 +219,7 @@ def pdf_por_categoria():
         c.save()
 
     return redirect("/admin")
+
 
 @app.route("/admin/excluir/<int:id>", methods=["POST"])
 def excluir_inscrito(id):
