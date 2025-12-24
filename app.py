@@ -225,8 +225,6 @@ def pdf_por_categoria():
 
         c.save()
 
-    if arquivos:
-        return send_file(arquivos[0], as_attachment=False)
 
     return redirect("/admin")
 
