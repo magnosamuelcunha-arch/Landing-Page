@@ -105,20 +105,19 @@ def inscricao():
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
-    session.clear()
     erro = None
 
     if request.method == "POST":
-        if request.form["usuario"] == "CT FRANÇA" and request.form["senha"] == "FRANÇA123":
+        usuario = request.form["usuario"]
+        senha = request.form["senha"]
+
+        if usuario == "CT FRANÇA" and senha == "FRANÇA123":
             session["admin"] = True
             return redirect("/admin")
         else:
             erro = "Usuário ou senha inválidos"
 
     return render_template("admin_login.html", erro=erro)
-
-
-
 
 @app.route("/admin")
 def admin():
@@ -131,11 +130,11 @@ def admin():
 
     return render_template("admin.html", inscritos=inscritos)
 
-
 @app.route("/admin/logout")
 def admin_logout():
     session.clear()
     return redirect("/admin/login")
+
 
 
 
