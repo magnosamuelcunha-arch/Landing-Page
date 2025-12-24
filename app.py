@@ -1,4 +1,3 @@
-from flask_session import Session
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from flask import Flask, render_template, request, session, redirect
@@ -10,17 +9,31 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def init_db():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS inscritos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        categoria TEXT NOT NULL,
+        equipe TEXT NOT NULL
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS admin_sessions (
+        token TEXT PRIMARY KEY
+    )
+    """)
+
+    conn.commit()
+    conn.close()
 
 
 app = Flask(__name__)
 init_db()
-app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta"
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_COOKIE_SAMESITE"] = "None"
-app.config["SESSION_COOKIE_SECURE"] = True
-
-Session(app)
 app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta-123456"
 
 
@@ -99,7 +112,6 @@ def inscricao():
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
-    session.clear()
     erro = None
 
     if request.method == "POST":
@@ -107,12 +119,19 @@ def admin_login():
         senha = request.form["senha"]
 
         if usuario == "CT FRANÇA" and senha == "FRANÇA123":
-            session["admin"] = True
-            return redirect("/admin")
+            token = str(uuid.uuid4())
+
+            conn = get_db_connection()
+            conn.execute("INSERT INTO admin_sessions (token) VALUES (?)", (token,))
+            conn.commit()
+            conn.close()
+
+            return redirect(f"/admin?token={token}")
         else:
             erro = "Usuário ou senha inválidos"
 
     return render_template("admin_login.html", erro=erro)
+
 
 @app.route("/admin")
 def admin():
@@ -135,27 +154,7 @@ def admin():
     conn.close()
 
     return render_template("admin.html", inscritos=inscritos, token=token)
-def init_db():
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS inscritos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        categoria TEXT NOT NULL,
-        equipe TEXT NOT NULL
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS admin_sessions (
-        token TEXT PRIMARY KEY
-    )
-    """)
-
-    conn.commit()
-    conn.close()
 
 @app.route("/admin/logout")
 def admin_logout():
@@ -168,6 +167,7 @@ def admin_logout():
         conn.close()
 
     return redirect("/admin/login")
+
 
 
 @app.route("/admin/pdf")
