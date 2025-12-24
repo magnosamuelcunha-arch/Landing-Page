@@ -12,12 +12,12 @@ def get_db_connection():
 
 
 app = Flask(__name__)
+app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta"
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
-app.config.update(
-    SESSION_COOKIE_SAMESITE="None",
-    SESSION_COOKIE_SECURE=True
-)
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SECURE"] = True
+
 Session(app)
 app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta-123456"
 
