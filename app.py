@@ -97,7 +97,7 @@ def inscricao():
 
         conn = get_db_connection()
         conn.execute(
-            "INSERT INTO inscritos (nome, categoria, faix, equipe) VALUES (?, ?, ?)",
+            "INSERT INTO inscritos (nome, categoria, faixa, equipe) VALUES (?, ?, ?, ?)",
             (nome, categoria, faixa, equipe)
         )
         conn.commit()
