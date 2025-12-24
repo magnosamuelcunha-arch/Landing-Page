@@ -1,4 +1,14 @@
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 from flask import Flask, render_template, request, session, redirect
+from collections import defaultdict
+import sqlite3
+def get_db_connection():
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
 
 app = Flask(__name__)
 app.secret_key = "segredo_admin"
@@ -58,15 +68,21 @@ def inscricao():
         categoria = request.form["categoria"]
         equipe = request.form["equipe"]
 
-        inscritos.append({
-            "nome": nome,
-            "categoria": categoria,
-            "equipe": equipe
-        })
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO inscritos (nome, categoria, equipe) VALUES (?, ?, ?)",
+            (nome, categoria, equipe)
+        )
+        conn.commit()
+        conn.close()
 
         mensagem = "Inscrição realizada com sucesso!"
 
-    return render_template("inscricao.html", evento=evento, mensagem=mensagem)
+    return render_template(
+        "inscricao.html",
+        evento=evento,
+        mensagem=mensagem
+    )
 
 # ---------------- ADMIN ----------------
 
@@ -91,26 +107,118 @@ def admin():
     if not session.get("admin"):
         return redirect("/admin/login")
 
+    conn = get_db_connection()
+    inscritos = conn.execute("SELECT * FROM inscritos").fetchall()
+    conn.close()
+
     return render_template("admin.html", inscritos=inscritos)
-
-
 @app.route("/admin/logout")
 def admin_logout():
     session.clear()
     return redirect("/admin/login")
-@app.route("/admin/excluir/<int:index>", methods=["POST"])
-def excluir_inscricao(index):
+@app.route("/admin/excluir/<int:id>", methods=["POST"])
+def excluir_inscricao(id):
     if not session.get("admin"):
         return redirect("/admin/login")
 
-    if 0 <= index < len(inscritos):
-        inscritos.pop(index)
+    conn = get_db_connection()
+    conn.execute("DELETE FROM inscritos WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
 
     return redirect("/admin")
+
+@app.route("/admin/pdf")
+def exportar_pdf():
+    if not session.get("admin"):
+        return redirect("/admin/login")
+
+    conn = get_db_connection()
+    inscritos = conn.execute("SELECT * FROM inscritos").fetchall()
+    conn.close()
+
+    arquivo_pdf = "static/inscritos.pdf"
+    c = canvas.Canvas(arquivo_pdf, pagesize=A4)
+    largura, altura = A4
+
+    y = altura - 40
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(40, y, "Lista de Inscritos - Open Jiu-Jitsu 2026")
+
+    y -= 30
+    c.setFont("Helvetica", 10)
+
+    for inscrito in inscritos:
+        texto = f"{inscrito['nome']} | {inscrito['categoria']} | {inscrito['equipe']}"
+        c.drawString(40, y, texto)
+        y -= 15
+
+        if y < 40:
+            c.showPage()
+            c.setFont("Helvetica", 10)
+            y = altura - 40
+
+    c.save()
+
+    return redirect("/static/inscritos.pdf")
+
+@app.route("/admin/pdf/categorias")
+def pdf_por_categoria():
+    if not session.get("admin"):
+        return redirect("/admin/login")
+
+    conn = get_db_connection()
+    inscritos = conn.execute(
+        "SELECT nome, categoria, equipe FROM inscritos"
+    ).fetchall()
+    conn.close()
+
+    categorias = defaultdict(list)
+
+    for i in inscritos:
+        categorias[i["categoria"]].append(i)
+
+    for categoria, lista in categorias.items():
+        nome_arquivo = (
+            categoria
+            .lower()
+            .replace(" ", "_")
+            .replace("–", "")
+            .replace(".", "")
+        )
+
+        caminho_pdf = f"static/{nome_arquivo}.pdf"
+
+        c = canvas.Canvas(caminho_pdf, pagesize=A4)
+        largura, altura = A4
+        y = altura - 40
+
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(40, y, f"Categoria: {categoria}")
+
+        y -= 30
+        c.setFont("Helvetica", 10)
+
+        for inscrito in lista:
+            linha = f"{inscrito['nome']} - {inscrito['equipe']}"
+            c.drawString(40, y, linha)
+            y -= 15
+
+            if y < 40:
+                c.showPage()
+                c.setFont("Helvetica", 10)
+                y = altura - 40
+
+        c.save()
+
+    return redirect("/admin")
+
 
 
 # ---------------- EXECUÇÃO ----------------
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
+
 

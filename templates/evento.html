@@ -6,6 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
+<script>
+    function toggleCategorias() {
+        const categorias = document.getElementById("categorias");
+        const botao = document.querySelector(".btn-inscricoes");
+
+        if (categorias.style.display === "none" || categorias.style.display === "") {
+            categorias.style.display = "block";
+            categorias.scrollIntoView({ behavior: "smooth" });
+            botao.innerText = "Ocultar Categorias";
+        } else {
+            categorias.style.display = "none";
+            botao.innerText = "Mostrar Categorias";
+        }
+    }
+</script>
+
+<script>
+    function mostrarCategorias() {
+        const categorias = document.getElementById("categorias");
+
+        if (categorias.style.display === "none" || categorias.style.display === "") {
+            categorias.style.display = "block";
+            categorias.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+</script>
+
 <body>
 
     <!-- MENU -->
@@ -26,7 +54,11 @@
             <h1>{{ evento.nome }}</h1>
             <p>{{ evento.local }}</p>
             <p>{{ evento.data }}</p>
-            <span class="status">{{ evento.status }}</span>
+<button class="status btn-inscricoes" onclick="toggleCategorias()">
+    Mostrar Categorias
+</button>
+
+
 
             <div class="botoes">
                 <a href="/inscricao" class="btn azul">Inscrição</a>
@@ -39,14 +71,16 @@
         </header>
 
         <!-- CATEGORIAS -->
-        <section class="card">
-            <h2>Categorias</h2>
-            <div class="categorias">
-                {% for c in evento.categorias %}
-                    <div class="categoria">{{ c }}</div>
-                {% endfor %}
-            </div>
-        </section>
+<section class="card" id="categorias">
+    <h2>Categorias</h2>
+    <div class="categorias">
+        {% for c in evento.categorias %}
+            <div class="categoria">{{ c }}</div>
+        {% endfor %}
+    </div>
+</section>
+
+
 
     </div>
 

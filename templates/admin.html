@@ -65,10 +65,52 @@
             font-style: italic;
             color: #666;
         }
+        .botoes-pdf {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.botao-pdf {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.botao-pdf:hover {
+    background-color: #43a047;
+    transform: scale(1.05);
+}
+
     </style>
 </head>
 <body>
+    <a href="/admin/pdf" class="btn-pdf" title="Exportar para PDF">
+    📄</a>
     <h1>Lista de Inscritos</h1>
+
+<h2>PDFs por Categoria</h2>
+
+<div class="botoes-pdf">
+    {% for categoria in inscritos | map(attribute='categoria') | unique %}
+        <a class="botao-pdf"
+           href="/static/{{ categoria | lower | replace(' ', '_') }}.pdf"
+           target="_blank">
+            📄 {{ categoria }}
+        </a>
+    {% endfor %}
+</div>
+
+
 
     {% if inscritos %}
     <table class="tabela-admin">
@@ -86,9 +128,22 @@
             <td>{{ inscrito.categoria }}</td>
             <td>{{ inscrito.equipe }}</td>
             <td>
-                <form action="/admin/excluir/{{ loop.index0 }}" method="post" onsubmit="return confirm('Deseja excluir esta inscrição?')">
-                    <button class="btn-excluir">Excluir</button>
-                </form>
+<form action="/admin/excluir/{{ inscrito.id }}" method="POST">
+    <button type="submit" class="btn-excluir">Excluir</button>
+</form>
+<div style="text-align:center; margin-bottom: 20px;">
+    <a href="/admin/pdf" target="_blank"
+       style="
+       background:#4CAF50;
+       color:white;
+       padding:10px 20px;
+       border-radius:6px;
+       text-decoration:none;
+       font-weight:bold;">
+       📄 Exportar PDF
+    </a>
+</div>
+
             </td>
         </tr>
         {% endfor %}

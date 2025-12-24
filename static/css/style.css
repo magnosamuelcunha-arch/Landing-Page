@@ -326,3 +326,62 @@ body {
     background-color: #b91c1c;
 }
 
+#categorias {
+    display: none;
+}
+
+#categorias {
+    display: none;
+}
+
+.btn-inscricoes {
+    background: linear-gradient(135deg, #00c853, #00a846);
+    color: #ffffff;
+    border: none;
+    padding: 10px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-inscricoes:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 200, 83, 0.4);
+}
+
+.btn-inscricoes:active {
+    transform: scale(0.97);
+}
+
+.btn-pdf {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    width: 55px;
+    height: 55px;
+
+    background-color: #4CAF50;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    font-size: 24px;
+
+    text-decoration: none;
+
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
+}
+
+.btn-pdf:hover {
+    background-color: #43a047;
+    transform: scale(1.1);
+}
+
+
