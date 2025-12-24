@@ -112,6 +112,7 @@ def inscricao():
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
+    session.clear()
     erro = None
 
     if request.method == "POST":
@@ -119,54 +120,32 @@ def admin_login():
         senha = request.form["senha"]
 
         if usuario == "CT FRANÇA" and senha == "FRANÇA123":
-            token = str(uuid.uuid4())
-
-            conn = get_db_connection()
-            conn.execute("INSERT INTO admin_sessions (token) VALUES (?)", (token,))
-            conn.commit()
-            conn.close()
-
-            return redirect(f"/admin?token={token}")
+            session["admin"] = True
+            return redirect("/admin")
         else:
             erro = "Usuário ou senha inválidos"
 
     return render_template("admin_login.html", erro=erro)
 
 
+
 @app.route("/admin")
 def admin():
-    token = request.args.get("token")
-
-    if not token:
-        return redirect("/admin/login")
-
-    conn = get_db_connection()
-    valido = conn.execute(
-        "SELECT 1 FROM admin_sessions WHERE token = ?", (token,)
-    ).fetchone()
-    conn.close()
-
-    if not valido:
+    if not session.get("admin"):
         return redirect("/admin/login")
 
     conn = get_db_connection()
     inscritos = conn.execute("SELECT * FROM inscritos").fetchall()
     conn.close()
 
-    return render_template("admin.html", inscritos=inscritos, token=token)
+    return render_template("admin.html", inscritos=inscritos)
 
 
 @app.route("/admin/logout")
 def admin_logout():
-    token = request.args.get("token")
-
-    if token:
-        conn = get_db_connection()
-        conn.execute("DELETE FROM admin_sessions WHERE token = ?", (token,))
-        conn.commit()
-        conn.close()
-
+    session.clear()
     return redirect("/admin/login")
+
 
 
 
