@@ -13,6 +13,7 @@ def get_db_connection():
 
 
 app = Flask(__name__)
+init_db()
 app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta"
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
@@ -134,6 +135,27 @@ def admin():
     conn.close()
 
     return render_template("admin.html", inscritos=inscritos, token=token)
+def init_db():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS inscritos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        categoria TEXT NOT NULL,
+        equipe TEXT NOT NULL
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS admin_sessions (
+        token TEXT PRIMARY KEY
+    )
+    """)
+
+    conn.commit()
+    conn.close()
 
 @app.route("/admin/logout")
 def admin_logout():
