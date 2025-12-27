@@ -1,9 +1,12 @@
+import sqlite3
+import re
+import zipfile
+from collections import defaultdict
+
+from flask import Flask, render_template, request, session, redirect, send_file
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-from flask import Flask, render_template, request, session, redirect
-import uuid
-from collections import defaultdict
-import sqlite3
+
 def get_db_connection():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
@@ -22,8 +25,7 @@ def init_db():
         equipe TEXT NOT NULL
     )
     """)
-    conn.commit()
-    conn.close()
+
 
     # Verifica se a coluna faixa existe, se não existir cria
     cursor.execute("PRAGMA table_info(inscritos)")
@@ -204,7 +206,6 @@ def pdf_por_categoria():
     conn.close()
 
     categorias = defaultdict(list)
-
     for i in inscritos:
         categorias[i["categoria"]].append(i)
 
@@ -239,6 +240,7 @@ def pdf_por_categoria():
             zipf.write(caminho_pdf, arcname=f"{nome_arquivo}.pdf")
 
     return send_file(zip_path, as_attachment=True, download_name="pdfs_por_categoria.zip")
+
 
 @app.route("/admin/excluir/<int:id>", methods=["POST"])
 def excluir_inscrito(id):
