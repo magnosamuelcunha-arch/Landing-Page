@@ -1,48 +1,52 @@
-import sqlite3
 import re
 import zipfile
 from collections import defaultdict
 
+import requests
 from flask import Flask, render_template, request, session, redirect, send_file
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-def get_db_connection():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+# ================== SUPABASE ==================
 
-def init_db():
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
+SUPABASE_URL = "https://hohrkvydajmzbmlvfyil.supabase.co"
+SUPABASE_KEY = "sb_publishable_ObCicLiZDdgxhkd5mYZENw_dqgFF0R4"
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS inscritos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        categoria TEXT NOT NULL,
-        faixa TEXT NOT NULL DEFAULT '',
-        equipe TEXT NOT NULL
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json"
+}
+
+def salvar_inscricao(nome, categoria, faixa, equipe):
+    requests.post(
+        f"{SUPABASE_URL}/rest/v1/inscritos",
+        headers={**HEADERS, "Prefer": "return=minimal"},
+        json={
+            "nome": nome,
+            "categoria": categoria,
+            "faixa": faixa,
+            "equipe": equipe
+        }
     )
-    """)
 
+def listar_inscritos():
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/inscritos?select=*",
+        headers=HEADERS
+    )
+    return r.json()
 
-    # Verifica se a coluna faixa existe, se não existir cria
-    cursor.execute("PRAGMA table_info(inscritos)")
-    colunas = [col[1] for col in cursor.fetchall()]
+def excluir_inscrito_supabase(id):
+    requests.delete(
+        f"{SUPABASE_URL}/rest/v1/inscritos?id=eq.{id}",
+        headers=HEADERS
+    )
 
-    if "faixa" not in colunas:
-        cursor.execute("ALTER TABLE inscritos ADD COLUMN faixa TEXT")
-
-    conn.commit()
-    conn.close()
-
+# ================== APP ==================
 
 app = Flask(__name__)
-init_db()
 app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta-123456"
-
-
 
 evento = {
     "nome": "OPEN GRADUAÇÃO DE JIU-JITSU – 2026",
@@ -81,9 +85,7 @@ evento = {
     ]
 }
 
-inscritos = []
-
-# ---------------- ROTAS PRINCIPAIS ----------------
+# ================== ROTAS ==================
 
 @app.route("/")
 def home():
@@ -92,53 +94,33 @@ def home():
 @app.route("/inscricao", methods=["GET", "POST"])
 def inscricao():
     mensagem = None
-
     if request.method == "POST":
-        nome = request.form["nome"]
-        categoria = request.form["categoria"]
-        faixa = request.form["faixa"]
-        equipe = request.form["equipe"]
-
-        conn = get_db_connection()
-        conn.execute(
-            "INSERT INTO inscritos (nome, categoria, faixa, equipe) VALUES (?, ?, ?, ?)",
-            (nome, categoria, faixa, equipe)
+        salvar_inscricao(
+            request.form["nome"],
+            request.form["categoria"],
+            request.form["faixa"],
+            request.form["equipe"]
         )
-        conn.commit()
-        conn.close()
-
         mensagem = "Inscrição realizada com sucesso!"
-
     return render_template("inscricao.html", evento=evento, mensagem=mensagem)
 
-
-# ---------------- ADMIN ----------------
+# ================== ADMIN ==================
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     erro = None
-
     if request.method == "POST":
-        usuario = request.form["usuario"]
-        senha = request.form["senha"]
-
-        if usuario == "CT FRANÇA" and senha == "FRANÇA123":
+        if request.form["usuario"] == "CT FRANÇA" and request.form["senha"] == "FRANÇA123":
             session["admin"] = True
             return redirect("/admin")
-        else:
-            erro = "Usuário ou senha inválidos"
-
+        erro = "Usuário ou senha inválidos"
     return render_template("admin_login.html", erro=erro)
 
 @app.route("/admin")
 def admin():
     if not session.get("admin"):
         return redirect("/admin/login")
-
-    conn = get_db_connection()
-    inscritos = conn.execute("SELECT * FROM inscritos").fetchall()
-    conn.close()
-
+    inscritos = listar_inscritos()
     return render_template("admin.html", inscritos=inscritos)
 
 @app.route("/admin/logout")
@@ -146,66 +128,52 @@ def admin_logout():
     session.clear()
     return redirect("/admin/login")
 
+@app.route("/admin/excluir/<int:id>", methods=["POST"])
+def excluir_inscrito(id):
+    if not session.get("admin"):
+        return redirect("/admin/login")
+    excluir_inscrito_supabase(id)
+    return redirect("/admin")
 
-
-
+# ================== PDF ==================
 
 @app.route("/admin/pdf")
 def exportar_pdf():
     if not session.get("admin"):
         return redirect("/admin/login")
 
-    conn = get_db_connection()
-    inscritos = conn.execute("SELECT * FROM inscritos").fetchall()
-    conn.close()
+    inscritos = listar_inscritos()
 
     arquivo_pdf = "static/inscritos.pdf"
     c = canvas.Canvas(arquivo_pdf, pagesize=A4)
     largura, altura = A4
-
     y = altura - 40
 
     c.setFont("Helvetica-Bold", 14)
     c.drawString(40, y, "Lista de Inscritos - Open Jiu-Jitsu 2026")
-
     y -= 30
     c.setFont("Helvetica", 10)
 
-    for inscrito in inscritos:
-        texto = f"{inscrito['nome']} | {inscrito['categoria']} | {inscrito['faixa']} | {inscrito['equipe']}"
-        c.drawString(40, y, texto)
+    for i in inscritos:
+        linha = f"{i['nome']} | {i['categoria']} | {i['faixa']} | {i['equipe']}"
+        c.drawString(40, y, linha)
         y -= 15
-
         if y < 40:
             c.showPage()
             c.setFont("Helvetica", 10)
             y = altura - 40
 
     c.save()
-
     return redirect("/static/inscritos.pdf")
-
-import re
-
-import re
-from flask import send_file
-
-import re
-import zipfile
-from flask import send_file
 
 @app.route("/admin/pdf/categorias")
 def pdf_por_categoria():
     if not session.get("admin"):
         return redirect("/admin/login")
 
-    conn = get_db_connection()
-    inscritos = conn.execute(
-        "SELECT nome, categoria, faixa, equipe FROM inscritos"
-    ).fetchall()
-    conn.close()
-
+    inscritos = listar_inscritos()
     categorias = defaultdict(list)
+
     for i in inscritos:
         categorias[i["categoria"]].append(i)
 
@@ -222,15 +190,12 @@ def pdf_por_categoria():
 
             c.setFont("Helvetica-Bold", 14)
             c.drawString(40, y, f"Categoria: {categoria}")
-
             y -= 30
             c.setFont("Helvetica", 10)
 
-            for inscrito in lista:
-                linha = f"{inscrito['nome']} - {inscrito['faixa']} - {inscrito['equipe']}"
-                c.drawString(40, y, linha)
+            for i in lista:
+                c.drawString(40, y, f"{i['nome']} - {i['faixa']} - {i['equipe']}")
                 y -= 15
-
                 if y < 40:
                     c.showPage()
                     c.setFont("Helvetica", 10)
@@ -241,24 +206,10 @@ def pdf_por_categoria():
 
     return send_file(zip_path, as_attachment=True, download_name="pdfs_por_categoria.zip")
 
-
-@app.route("/admin/excluir/<int:id>", methods=["POST"])
-def excluir_inscrito(id):
-    if not session.get("admin"):
-        return redirect("/admin/login")
-
-    conn = get_db_connection()
-    conn.execute("DELETE FROM inscritos WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
-
-    return redirect("/admin")
-
-
-
-# ---------------- EXECUÇÃO ----------------
+# ================== RUN ==================
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
 
 
