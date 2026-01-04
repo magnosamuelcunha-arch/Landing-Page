@@ -7,47 +7,40 @@ from flask import Flask, render_template, request, session, redirect, send_file
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-# ================== SUPABASE ==================
-
+# ================= SUPABASE CONFIG =================
 SUPABASE_URL = "https://hohrkvydajmzbmlvfyil.supabase.co"
 SUPABASE_KEY = "sb_publishable_ObCicLiZDdgxhkd5mYZENw_dqgFF0R4"
 
 HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
 }
 
+# ================= FUNÇÕES SUPABASE =================
 def salvar_inscricao(nome, categoria, faixa, equipe):
-    requests.post(
-        f"{SUPABASE_URL}/rest/v1/inscritos",
-        headers={**HEADERS, "Prefer": "return=minimal"},
-        json={
-            "nome": nome,
-            "categoria": categoria,
-            "faixa": faixa,
-            "equipe": equipe
-        }
-    )
+    url = f"{SUPABASE_URL}/rest/v1/inscritos"
+    requests.post(url, headers=HEADERS, json={
+        "nome": nome,
+        "categoria": categoria,
+        "faixa": faixa,
+        "equipe": equipe
+    })
 
 def listar_inscritos():
-    r = requests.get(
-        f"{SUPABASE_URL}/rest/v1/inscritos?select=*",
-        headers=HEADERS
-    )
+    url = f"{SUPABASE_URL}/rest/v1/inscritos?select=*"
+    r = requests.get(url, headers=HEADERS)
     return r.json()
 
 def excluir_inscrito_supabase(id):
-    requests.delete(
-        f"{SUPABASE_URL}/rest/v1/inscritos?id=eq.{id}",
-        headers=HEADERS
-    )
+    url = f"{SUPABASE_URL}/rest/v1/inscritos?id=eq.{id}"
+    requests.delete(url, headers=HEADERS)
 
-# ================== APP ==================
-
+# ================= APP =================
 app = Flask(__name__)
-app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta-123456"
+app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta"
 
+# ================= EVENTO =================
 evento = {
     "nome": "OPEN GRADUAÇÃO DE JIU-JITSU – 2026",
     "local": "PROJETO BOM MENINO – ITAITUBA/PA",
@@ -85,8 +78,7 @@ evento = {
     ]
 }
 
-# ================== ROTAS ==================
-
+# ================= ROTAS =================
 @app.route("/")
 def home():
     return render_template("evento.html", evento=evento)
@@ -102,10 +94,9 @@ def inscricao():
             request.form["equipe"]
         )
         mensagem = "Inscrição realizada com sucesso!"
-    return render_template("inscricao.html", evento=evento, mensagem=mensagem)
+    return render_template("inscricao.html", mensagem=mensagem, evento=evento)
 
-# ================== ADMIN ==================
-
+# ================= ADMIN =================
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     erro = None
@@ -123,28 +114,26 @@ def admin():
     inscritos = listar_inscritos()
     return render_template("admin.html", inscritos=inscritos)
 
-@app.route("/admin/logout")
-def admin_logout():
-    session.clear()
-    return redirect("/admin/login")
-
 @app.route("/admin/excluir/<int:id>", methods=["POST"])
-def excluir_inscrito(id):
+def excluir(id):
     if not session.get("admin"):
         return redirect("/admin/login")
     excluir_inscrito_supabase(id)
     return redirect("/admin")
 
-# ================== PDF ==================
+@app.route("/admin/logout")
+def admin_logout():
+    session.clear()
+    return redirect("/admin/login")
 
+# ================= PDF GERAL =================
 @app.route("/admin/pdf")
 def exportar_pdf():
     if not session.get("admin"):
         return redirect("/admin/login")
 
     inscritos = listar_inscritos()
-
-    arquivo_pdf = "static/inscritos.pdf"
+    arquivo_pdf = "/tmp/inscritos.pdf"
     c = canvas.Canvas(arquivo_pdf, pagesize=A4)
     largura, altura = A4
     y = altura - 40
@@ -155,17 +144,16 @@ def exportar_pdf():
     c.setFont("Helvetica", 10)
 
     for i in inscritos:
-        linha = f"{i['nome']} | {i['categoria']} | {i['faixa']} | {i['equipe']}"
-        c.drawString(40, y, linha)
+        c.drawString(40, y, f"{i['nome']} | {i['categoria']} | {i['faixa']} | {i['equipe']}")
         y -= 15
         if y < 40:
             c.showPage()
-            c.setFont("Helvetica", 10)
             y = altura - 40
 
     c.save()
-    return redirect("/static/inscritos.pdf")
+    return send_file(arquivo_pdf, as_attachment=True)
 
+# ================= PDF POR CATEGORIA =================
 @app.route("/admin/pdf/categorias")
 def pdf_por_categoria():
     if not session.get("admin"):
@@ -173,23 +161,19 @@ def pdf_por_categoria():
 
     inscritos = listar_inscritos()
     categorias = defaultdict(list)
-
     for i in inscritos:
         categorias[i["categoria"]].append(i)
 
     zip_path = "/tmp/pdfs_categorias.zip"
-
     with zipfile.ZipFile(zip_path, "w") as zipf:
         for categoria, lista in categorias.items():
-            nome_arquivo = re.sub(r'[^a-zA-Z0-9_]', '', categoria.lower().replace(" ", "_"))
-            caminho_pdf = f"/tmp/{nome_arquivo}.pdf"
-
-            c = canvas.Canvas(caminho_pdf, pagesize=A4)
-            largura, altura = A4
-            y = altura - 40
+            nome = re.sub(r'[^a-zA-Z0-9_]', '', categoria.lower().replace(" ", "_"))
+            pdf_path = f"/tmp/{nome}.pdf"
+            c = canvas.Canvas(pdf_path, pagesize=A4)
+            y = A4[1] - 40
 
             c.setFont("Helvetica-Bold", 14)
-            c.drawString(40, y, f"Categoria: {categoria}")
+            c.drawString(40, y, categoria)
             y -= 30
             c.setFont("Helvetica", 10)
 
@@ -198,18 +182,17 @@ def pdf_por_categoria():
                 y -= 15
                 if y < 40:
                     c.showPage()
-                    c.setFont("Helvetica", 10)
-                    y = altura - 40
+                    y = A4[1] - 40
 
             c.save()
-            zipf.write(caminho_pdf, arcname=f"{nome_arquivo}.pdf")
+            zipf.write(pdf_path, arcname=f"{nome}.pdf")
 
-    return send_file(zip_path, as_attachment=True, download_name="pdfs_por_categoria.zip")
-
-# ================== RUN ==================
-
+    return send_file(zip_path, as_attachment=True)
+#execução
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0")
+    
+
 
 
 
