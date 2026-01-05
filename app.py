@@ -44,7 +44,7 @@ app.secret_key = "open-jiu-jitsu-2026-chave-super-secreta"
 evento = {
     "nome": "OPEN GRADUAÇÃO DE JIU-JITSU – 2026",
     "local": "PROJETO BOM MENINO – ITAITUBA/PA",
-    "data": "1 de Fevereiro de 2026",
+    "data": "8 de Fevereiro de 2026",
     "status": "Inscrições Abertas",
     "categorias": [
         "Até 20 kg – Idade máxima: 6 anos. Faixa branca e cinza.",
